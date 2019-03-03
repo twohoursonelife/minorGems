@@ -209,6 +209,9 @@ int getSpriteHeight( SpriteHandle inSprite );
 void setSpriteCenterOffset( SpriteHandle inSprite, doublePair inOffset );
 
 
+// FOVMOD NOTE:  Change 1/2 - Take these lines during the merge process
+void setSpriteWrapping ( SpriteHandle inSprite, char inHorizontal, char inVertical );
+
 
 void startCountingSpritePixelsDrawn();
 
@@ -248,6 +251,11 @@ void drawSprite( SpriteHandle inSprite, doublePair inCenter,
 // corners in BL, BR, TR, TL order
 void drawSprite( SpriteHandle inSprite, doublePair inCornerPos[4], 
                  FloatColor inCornerColors[4] );
+
+
+// FOVMOD NOTE:  Change 2/2 - Take these lines during the merge process
+void drawSprite( SpriteHandle inSprite, doublePair inCornerPos[4],
+                 doublePair inTexCoords[4] );
 
 
 // draw with current draw color, but ignore sprite's colors and use

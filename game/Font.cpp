@@ -666,4 +666,12 @@ void Font::setMinimumPositionPrecision( double inMinimum ) {
     }
 
 
+// FOVMOD NOTE:  Change 1/1 - Take these lines during the merge process
+void Font::setScaleFactor( double newScaleFactor ) {
+    mScaleFactor = newScaleFactor;
+}
+
+double Font::getScaleFactor() {
+    return mScaleFactor;
+}
 

@@ -167,6 +167,18 @@ typedef struct SocketEvent {
 
 
 
+// FOVMOD NOTE:  Change 1/3 - Take these lines during the merge process
+namespace MouseButton {
+    enum {
+        NONE,
+        LEFT,
+        MIDDLE,
+        RIGHT,
+        WHEELUP,
+        WHEELDOWN
+        };
+    }
+
 /**
  * Object that handles general initialization of an OpenGL screen.
  *
@@ -664,6 +676,11 @@ class ScreenGL {
         char isLastMouseButtonRight() {
             return mLastMouseButtonRight;
             }
+        
+        // FOVMOD NOTE:  Change 2/3 - Take these lines during the merge process
+        int getLastMouseButton() {
+            return mLastMouseButton;
+        }
 
 
 
@@ -841,6 +858,9 @@ class ScreenGL {
 
 
         char mLastMouseButtonRight;
+
+        // FOVMOD NOTE:  Change 3/3 - Take these lines during the merge process
+        int mLastMouseButton;
         
         // for playing back minimized window state
         char mLastMinimizedStatus;

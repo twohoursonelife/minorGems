@@ -10,6 +10,8 @@
 #include "doublePair.h"
 #include "minorGems/graphics/Image.h"
 
+// FOVMOD NOTE:  Change 1/2 - Take these lines during the merge process
+#include "minorGems/graphics/openGL/ScreenGL.h"
 
 
 // these are called by SDL or iPhone (or other platform) app wrapper
@@ -160,6 +162,9 @@ void pointerUp( float inX, float inY );
 // called by game to check which button was pressed
 // for now, can only differentiate right clicks from other clicks
 char isLastMouseButtonRight();
+
+// FOVMOD NOTE:  Change 2/2 - Take these lines during the merge process
+int getLastMouseButton();
 
 
 

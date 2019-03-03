@@ -369,6 +369,12 @@ SpriteGL::~SpriteGL() {
 
 
 
+// FOVMOD NOTE:  Change 1/4 - Take these lines during the merge process
+void SpriteGL::setWrapping( char inHorizontal,
+                            char inVertical ) {
+    mTexture->setWrapping( inHorizontal, inVertical );
+    }
+
 
 // NOTE
 // the GLES version of this is experimental and broken in terms of 
@@ -652,7 +658,9 @@ void SpriteGL::prepareDraw( int inFrame,
                             char inMipMapFilter,
                             double inRotation,
                             char inFlipH,
-                            char inComputeCornerPos ) {
+                            char inComputeCornerPos,
+                            // FOVMOD NOTE:  Change 2/4 - Take these lines during the merge process
+                            char inComputeTexCoords ) {
     /*
     printf( "Drawing sprite %d, r%f, (%f,%f), s%f, f%f\n",
             (int)(this), inRotation, inPosition->mX, inPosition->mY, inScale,
@@ -820,31 +828,33 @@ void SpriteGL::prepareDraw( int inFrame,
 
     
     
-    
-    textXA = (1.0 / mNumPages) * mCurrentPage;
-    textXB = textXA + (1.0 / mNumPages );
-    
-    textXA += 0.5 - mColoredRadiusLeftX;
-    textXB -= 0.5 - mColoredRadiusRightX;
-    
+    // FOVMOD NOTE:  Change 3/4 - Take these lines during the merge process
+    if ( inComputeTexCoords ) {
+        textXA = (1.0 / mNumPages) * mCurrentPage;
+        textXB = textXA + (1.0 / mNumPages );
+        
+        textXA += 0.5 - mColoredRadiusLeftX;
+        textXB -= 0.5 - mColoredRadiusRightX;
+        
 
-    textYB = (1.0 / mNumFrames) * inFrame;
-    textYA = textYB + (1.0 / mNumFrames );
+        textYB = (1.0 / mNumFrames) * inFrame;
+        textYA = textYB + (1.0 / mNumFrames );
 
-    textYB += 0.5 - mColoredRadiusTopY;
-    textYA -= 0.5 - mColoredRadiusBottomY;
+        textYB += 0.5 - mColoredRadiusTopY;
+        textYA -= 0.5 - mColoredRadiusBottomY;
 
-    squareTextureCoords[0] = textXA;
-    squareTextureCoords[1] = textYA;
+        squareTextureCoords[0] = textXA;
+        squareTextureCoords[1] = textYA;
 
-    squareTextureCoords[2] = textXB;
-    squareTextureCoords[3] = textYA;
-    
-    squareTextureCoords[4] = textXA;
-    squareTextureCoords[5] = textYB;
+        squareTextureCoords[2] = textXB;
+        squareTextureCoords[3] = textYA;
+        
+        squareTextureCoords[4] = textXA;
+        squareTextureCoords[5] = textYB;
 
-    squareTextureCoords[6] = textXB;
-    squareTextureCoords[7] = textYB;
+        squareTextureCoords[6] = textXB;
+        squareTextureCoords[7] = textYB;
+        }
     }
 
 
@@ -1027,6 +1037,59 @@ void SpriteGL::draw( int inFrame,
 
     
     glDisableClientState( GL_COLOR_ARRAY );
+    }
+
+
+// FOVMOD NOTE:  Change 4/4 - Take these lines during the merge process
+void SpriteGL::draw( int inFrame,
+                     doublePair inCornerPos[4],
+                     doublePair inTexCoords[4],
+                     char inLinearMagFilter,
+                     char inMipMapFilter ) {
+
+    prepareDraw( inFrame, &dummyPosition, 1, inLinearMagFilter,
+                 inMipMapFilter,
+                 0, false,
+                 // don't compute corners in prepare
+                 false );
+
+
+    squareVertices[0] = inCornerPos[0].x;
+    squareVertices[1] = inCornerPos[0].y;
+
+    // swap order
+    squareVertices[2] = inCornerPos[1].x;
+    squareVertices[3] = inCornerPos[1].y;
+
+    squareVertices[4] = inCornerPos[3].x;
+    squareVertices[5] = inCornerPos[3].y;
+
+    squareVertices[6] = inCornerPos[2].x;
+    squareVertices[7] = inCornerPos[2].y;
+
+    squareTextureCoords[0] = inTexCoords[0].x;
+    squareTextureCoords[1] = inTexCoords[0].y;
+
+    squareTextureCoords[2] = inTexCoords[1].x;
+    squareTextureCoords[3] = inTexCoords[1].y;
+
+    squareTextureCoords[4] = inTexCoords[3].x;
+    squareTextureCoords[5] = inTexCoords[3].y;
+
+    squareTextureCoords[6] = inTexCoords[2].x;
+    squareTextureCoords[7] = inTexCoords[2].y;
+
+
+    glVertexPointer( 2, GL_FLOAT, 0, squareVertices );
+    glTexCoordPointer( 2, GL_FLOAT, 0, squareTextureCoords );
+    
+    if( !sStateSet ) {    
+        glEnableClientState( GL_VERTEX_ARRAY );
+        glEnableClientState( GL_TEXTURE_COORD_ARRAY );
+        sStateSet = true;
+        }
+    
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
     }
 
 
