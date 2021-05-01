@@ -45,7 +45,7 @@
 
 #elif defined(WIN_32)
 
-#include <Winsock.h>
+#include <winsock.h>
 
 #endif
 
