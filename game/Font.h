@@ -88,6 +88,10 @@ class Font {
         // draws sprite centered on inPosition with no spacing adjustments
         void drawCharacterSprite( unsigned char inC, doublePair inPosition );
 
+        // FOVMOD NOTE:  Change 1/1 - Take these lines during the merge process
+        void setScaleFactor( double newScaleFactor );
+        double getScaleFactor();
+
     private:        
         
         // returns x coordinate to right of drawn character

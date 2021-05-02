@@ -161,6 +161,11 @@ class SingleTextureGL {
                              char inExpandEdge = false );        
 
 		
+        // FOVMOD NOTE:  Change 1/1 - Take these lines during the merge process
+        void setWrapping ( char inHorizontal,
+                           char inVertical );
+
+
 		/**
 		 * Enables this texture.
 		 */

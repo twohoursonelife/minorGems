@@ -3964,6 +3964,12 @@ char isLastMouseButtonRight() {
     }
 
 
+// FOVMOD NOTE:  Change 1/1 - Take these lines during the merge process
+int getLastMouseButton() {
+    return screen->getLastMouseButton();
+}
+
+
 
 void obscureRecordedNumericTyping( char inObscure, 
                                    char inCharToRecordInstead ) {
@@ -4846,6 +4852,15 @@ int sendToSocket( int inHandle, unsigned char *inData, int inDataLength ) {
         screen->getSocketEventTypeAndSize( inHandle, 
                                            &nextType, &nextNumBodyBytes );
         
+        while( nextType == 2 && nextNumBodyBytes == 0 ) {
+            // skip over any lingering waiting-for-read events
+            // sometimes there are extra in recording that aren't needed
+            // on playback for some reason
+            screen->getSocketEventTypeAndSize( inHandle, 
+                                           &nextType, &nextNumBodyBytes );
+            }
+        
+            
         if( nextType == 0 ) {
             return nextNumBodyBytes;
             }

@@ -446,6 +446,24 @@ void SingleTextureGL::setTextureData( unsigned char *inBytes,
 	}
 
 
+// FOVMOD NOTE:  Change 1/1 - Take these lines during the merge process
+void SingleTextureGL::setWrapping( char inHorizontal,
+                                   char inVertical ) {
+
+    glBindTexture( GL_TEXTURE_2D, mTextureID );
+
+    int error = glGetError();
+    if( error != GL_NO_ERROR ) {
+        printf( "Error binding to texture ID %d, error = %d\n",
+                (int)mTextureID,
+                error );
+        }
+    
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, inHorizontal ? GL_REPEAT : GL_CLAMP_TO_EDGE );
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, inVertical ? GL_REPEAT : GL_CLAMP_TO_EDGE );
+    }
+
+
 void SingleTextureGL::replaceTextureData( unsigned char *inBytes,
                                           char inAlphaOnly,
                                           unsigned int inWidth, 

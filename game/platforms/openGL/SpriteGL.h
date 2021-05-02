@@ -88,6 +88,13 @@ class SpriteGL{
                    char inMipMapFilter = false );
         
         
+        // FOVMOD NOTE:  Change 1/3 - Take these lines during the merge process
+        void draw( int inFrame,
+                   doublePair inCornerPos[4],
+                   doublePair inTexCoords[4],
+                   char inLinearMagFilter = false,
+                   char inMipMapFilter = false );
+
 
         int getNumFrames() {
             return mNumFrames;
@@ -141,6 +148,10 @@ class SpriteGL{
             mCenterOffset = inOffset;
             }
 
+
+        // FOVMOD NOTE:  Change 2/3 - Take these lines during the merge process
+        void setWrapping( char inHorizontal,
+                          char invertical );
 
 
         static void startCountingPixelsDrawn() {
@@ -226,7 +237,9 @@ class SpriteGL{
                           char inMipMapFilter,
                           double inRotation,
                           char inFlipH,
-                          char inComputeCornerPos = true );
+                          char inComputeCornerPos = true,
+                          // FOVMOD NOTE:  Change 3/3 - Take these lines during the merge process
+                          char inComputeTexCoords = true );
         
 
 

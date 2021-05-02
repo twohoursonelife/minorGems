@@ -202,6 +202,9 @@ static unsigned char keyMap[256];
 static char keyMapOn = true;
 
 
+// FOVMOD NOTE:  Change 1/3 - Take these lines during the merge process
+long timeSinceLastFrameMS = 0;
+
 // prototypes
 /*
 void callbackResize( int inW, int inH );
@@ -1672,15 +1675,26 @@ void ScreenGL::start() {
     int oversleepMSec = 0;
 
 
+    // FOVMOD NOTE:  Change 2/3 - Take these lines during the merge process
+    timeSec_t frameStartSec;
+    unsigned long frameStartMSec;
+    unsigned long oldFrameStart;
+
+    Time::getCurrentTime( &frameStartSec, &frameStartMSec );
+
     
     // main loop
     while( true ) {
         
-        timeSec_t frameStartSec;
-        unsigned long frameStartMSec;
+        oldFrameStart = frameStartMSec;
         
         Time::getCurrentTime( &frameStartSec, &frameStartMSec );
 
+
+        timeSinceLastFrameMS = frameStartMSec - oldFrameStart;
+        if( timeSinceLastFrameMS < 0 ) {
+            timeSinceLastFrameMS = 0;
+            }
 
         // pre-display first, this might involve a sleep for frame timing
         // purposes
@@ -2799,17 +2813,29 @@ void callbackPassiveMotion( int inX, int inY ) {
 	
 void callbackMouse( int inButton, int inState, int inX, int inY ) {
 	
-    // ignore wheel events
-    if( inButton == SDL_BUTTON_WHEELUP ||
-        inButton == SDL_BUTTON_WHEELDOWN ) {
-        return;
-        }
-    
-    if( inButton == SDL_BUTTON_RIGHT ) {
-        currentScreenGL->mLastMouseButtonRight = true;
-        }
-    else {
-        currentScreenGL->mLastMouseButtonRight = false;
+    // FOVMOD NOTE:  Change 3/3 - Take these lines during the merge process
+    currentScreenGL->mLastMouseButtonRight = false;
+
+    switch( inButton ) {
+        case SDL_BUTTON_LEFT:
+            currentScreenGL->mLastMouseButton = MouseButton::LEFT;
+            break;
+        case SDL_BUTTON_MIDDLE:
+            currentScreenGL->mLastMouseButton = MouseButton::MIDDLE;
+            break;
+        case SDL_BUTTON_RIGHT:
+            currentScreenGL->mLastMouseButtonRight = true;
+            currentScreenGL->mLastMouseButton = MouseButton::RIGHT;
+            break;
+        case SDL_BUTTON_WHEELUP:
+            currentScreenGL->mLastMouseButton = MouseButton::WHEELUP;
+            break;
+        case SDL_BUTTON_WHEELDOWN:
+            currentScreenGL->mLastMouseButton = MouseButton::WHEELDOWN;
+            break;
+        default:
+            currentScreenGL->mLastMouseButton = MouseButton::NONE;
+            break;
         }
     
 
