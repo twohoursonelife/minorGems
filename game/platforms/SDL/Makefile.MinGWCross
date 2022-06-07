@@ -37,7 +37,7 @@ PLATFORM_LIBPNG_FLAG = -lz -lpng
 
 
 # All platforms but OSX support g++ and need no linker hacks
-GXX = /usr/bin/i686-w64-mingw32-g++ 
+GXX = i686-w64-mingw32-g++ 
 LINK_FLAGS = 
 
 
@@ -46,7 +46,7 @@ all: all2
 
 icon.o: ../build/win32/icon.ico ../build/win32/icon.rc
 	cp ../build/win32/icon.ico ../build/win32/icon.rc .
-	/usr/bin/i686-w64-mingw32-windres -i icon.rc -o icon.o
+	i686-w64-mingw32-windres -i icon.rc -o icon.o
 
 ICON_FILE = icon.o
 
