@@ -33,7 +33,7 @@ PLATFORM_LINK_FLAGS_HEADLESS = -lmingw32 -mconsole -mwindows -lwsock32 -lwinmm -
 PLATFORM_LIBJPEG_FLAG = -ljpeg
 
 # not used for some builds
-PLATFORM_LIBPNG_FLAG = -lz -lpng
+PLATFORM_LIBPNG_FLAG = -lpng -lz
 
 
 # All platforms but OSX support g++ and need no linker hacks
