@@ -18,7 +18,7 @@
 
 
 # static lib flag needed to link compiled objs against miniupnp
-PLATFORM_COMPILE_FLAGS = -DWIN_32 -DSTATICLIB
+PLATFORM_COMPILE_FLAGS = -DWIN_32 -DSTATICLIB -static `sdl-config --static-libs`
 
 
 # need various GL libraries, winmm, and portaudio
@@ -33,7 +33,7 @@ PLATFORM_LINK_FLAGS_HEADLESS = -lmingw32 -mconsole -mwindows -lwsock32 -lwinmm -
 PLATFORM_LIBJPEG_FLAG = -ljpeg
 
 # not used for some builds
-PLATFORM_LIBPNG_FLAG = -lz -lpng
+PLATFORM_LIBPNG_FLAG = -lpng -lz
 
 
 # All platforms but OSX support g++ and need no linker hacks
