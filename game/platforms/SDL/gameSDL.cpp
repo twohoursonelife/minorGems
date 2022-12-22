@@ -1862,7 +1862,18 @@ int mainFunction( int inNumArgs, char **inArgs ) {
                 }
             }
         }
-    
+    else if( fullscreen ) {
+		
+		// This part is a quick fix
+		// Somehow the screen dimensions are still controlled 
+		// by screenWidth.ini and screenHeight.ini when fullscreen is true
+		
+        const SDL_VideoInfo* currentScreenInfo = SDL_GetVideoInfo();
+        
+        screenWidth = currentScreenInfo->current_w;
+        screenHeight = currentScreenInfo->current_h;		
+		
+        }
     
 
 
