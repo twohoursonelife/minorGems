@@ -1872,8 +1872,11 @@ int mainFunction( int inNumArgs, char **inArgs ) {
 		
         const SDL_VideoInfo* currentScreenInfo = SDL_GetVideoInfo();
         
-        screenWidth = currentScreenInfo->current_w;
-        screenHeight = currentScreenInfo->current_h;		
+        gameWidth = currentScreenInfo->current_w;
+        gameHeight = currentScreenInfo->current_h;		
+		
+        screenWidth = gameWidth;
+        screenHeight = gameHeight;
 		
         }
     
