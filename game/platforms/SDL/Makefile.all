@@ -63,6 +63,12 @@ ifeq ($(LINK_AGAINST_LIBPNG),yes)
 	NEEDED_MINOR_GEMS_OBJECTS += ${PNG_IMAGE_CONVERTER_O}
 endif
 
+# must get sdk v3 from: https://dl-game-sdk.discordapp.net/3.2.1/discord_game_sdk.zip
+ifneq ($(DISCORD_SDK_PATH),)
+	PLATFORM_COMPILE_FLAGS += -DUSE_DISCORD -I$(DISCORD_SDK_PATH)/c
+	PLATFORM_LINK_FLAGS += $(PLATFORM_DISCORD_SDK_FLAG)
+endif
+
 
 
 ifeq ($(LINK_HEADLESS),yes)
