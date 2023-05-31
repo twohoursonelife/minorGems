@@ -68,4 +68,6 @@ DIRECTORY_PLATFORM_PATH = win32
 POLL_PLATFORM = Unix
 POLL_PLATFORM_PATH = unix
 
-
+# not used for some builds
+# -Wl,-Bdynamic and -Wl,-Bstatic is used to turn off static linking while linking against the available dynamic library for discord sdk
+PLATFORM_DISCORD_SDK_FLAG = -Wl,-Bdynamic -ldiscord_game_sdk -L$(DISCORD_SDK_PATH)/lib/x86 -Wl,-Bstatic
