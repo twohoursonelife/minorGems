@@ -1854,22 +1854,6 @@ void ScreenGL::start() {
                     SDL_WM_GrabInput( SDL_GRAB_ON );
                     }
                 }
-            // map CTRL-q to ESC
-            // 17 is "DC1" which is ctrl-q on some platforms
-            else if( event.type == SDL_KEYDOWN &&
-                     ( ( event.key.keysym.sym == SDLK_q
-                         &&
-                         ( ( mods & KMOD_META ) || ( mods & KMOD_ALT )
-                           || ( mods & KMOD_CTRL ) ) )
-                       ||
-                       ( ( event.key.keysym.unicode & 0xFF ) == 17 ) ) ) {
-                
-                // map to 27, escape
-                int mouseX, mouseY;
-                SDL_GetMouseState( &mouseX, &mouseY );
-                
-                callbackKeyboard( 27, mouseX, mouseY );    
-                }
             else {
                 
 
@@ -1900,35 +1884,50 @@ void ScreenGL::start() {
                             }
                         }
                     else {
-                        unsigned char asciiKey;
+                        // YumLife: Map scancodes to their ASCII values as we
+                        // see them in keydown events. SDL keyup events do not
+                        // produce the "unicode" character value. In vanilla
+                        // minorGems, keyup events fall back to a partial
+                        // mapping of ASCII SDLKey values (despite the values
+                        // in the ASCII range actually already being defined as
+                        // their ASCII counterparts on a US keyboard). This
+                        // particularly does not work for non-US keyboard
+                        // layouts, where keys get mapped differently on up
+                        // than on down. This doesn't matter so much for OHOL
+                        // given how few keys it uses, but it matters for the
+                        // much wider range of keys used by hetuw/YumLife.
+                        //
+                        // This isn't a perfect solution, since changing
+                        // keyboard layouts mid-game might cause some keyup
+                        // events to be misinterpreted until a keydown. But
+                        // it's either that or always use US keyboard values
+                        // and confuse our international users by not letting
+                        // them map based on the characters they see on their
+                        // keycaps. OHOL producing ASCII at this layer is
+                        // weird, hetuw taking keybinds as ASCII is also weird,
+                        // and the two combined is just a headache. Game
+                        // engines are really meant to use keycodes opaquely
+                        // except for display and defaults, so SDL makes
+                        // appropriate assumptions here.
+                        static char scanCodeMap[256] = { 0 };
+                        unsigned char asciiKey = 0;
 
-                        // try unicode first, if 8-bit clean (extended ASCII)
-                        if( ( event.key.keysym.unicode & 0xFF00 ) == 0 &&
-                            ( event.key.keysym.unicode & 0x00FF ) != 0 ) {
-                            asciiKey = event.key.keysym.unicode & 0xFF;
+                        if (event.type == SDL_KEYDOWN) {
+                            unsigned short u = event.key.keysym.unicode;
+                            if (event.key.keysym.sym == SDLK_SPACE) {
+                                // On Linux, ctrl+space is ambiguously 0.
+                                asciiKey = ' ';
+                                }
+                            else if ((u & 0xFF80) == 0) { // Ignore anything outside of 7-bit ASCII.
+                                asciiKey = (u & 0x7F);
+                                }
+                            scanCodeMap[event.key.keysym.scancode] = asciiKey;
                             }
                         else {
-                            // else unicode-to-ascii failed
-
-                            // fall back
-                            asciiKey = 
-                                mapSDLKeyToASCII( event.key.keysym.sym );
+                                asciiKey = scanCodeMap[event.key.keysym.scancode];
                             }
 
-                      
                         if( asciiKey != 0 ) {
-                            // shift and caps cancel each other
-                            if( ( ( event.key.keysym.mod & KMOD_SHIFT )
-                                  &&
-                                  !( event.key.keysym.mod & KMOD_CAPS ) )
-                                ||
-                                ( !( event.key.keysym.mod & KMOD_SHIFT )
-                                  &&
-                                  ( event.key.keysym.mod & KMOD_CAPS ) ) ) {
-                                
-                                asciiKey = toupper( asciiKey );
-                                }
-                        
                             if( event.type == SDL_KEYDOWN ) {
                                 callbackKeyboard( asciiKey, mouseX, mouseY );
                                 }
