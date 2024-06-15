@@ -1456,7 +1456,7 @@ int mainFunction( int inNumArgs, char **inArgs ) {
             PROCESS_PER_MONITOR_DPI_AWARE  = 2
             } PROCESS_DPI_AWARENESS;
         
-        typedef HRESULT (*SetProcessDpiAwarenessFunc)( PROCESS_DPI_AWARENESS );
+        typedef HRESULT (WINAPI *SetProcessDpiAwarenessFunc)( PROCESS_DPI_AWARENESS );
         
         SetProcessDpiAwarenessFunc setAwareness = 
             (SetProcessDpiAwarenessFunc)GetProcAddress(
@@ -1489,7 +1489,7 @@ int mainFunction( int inNumArgs, char **inArgs ) {
         
         if( hUser32 != NULL ) {
             
-            typedef BOOL (*SetProcessDPIAwareFunc)();
+            typedef BOOL (WINAPI *SetProcessDPIAwareFunc)();
             
             SetProcessDPIAwareFunc setDPIAware = 
                 (SetProcessDPIAwareFunc)GetProcAddress( hUser32, 
@@ -1879,21 +1879,7 @@ int mainFunction( int inNumArgs, char **inArgs ) {
                            screenWidth, screenHeight );
             }
         }
-    else if( fullscreen ) {
-		
-		// This part is a quick fix
-		// Somehow the screen dimensions are still controlled 
-		// by screenWidth.ini and screenHeight.ini when fullscreen is true
-		
-        const SDL_VideoInfo* currentScreenInfo = SDL_GetVideoInfo();
-        
-        gameWidth = currentScreenInfo->current_w;
-        gameHeight = currentScreenInfo->current_h;		
-		
-        screenWidth = gameWidth;
-        screenHeight = gameHeight;
-		
-        }
+    
     
 
 
@@ -3991,6 +3977,50 @@ char isCommandKeyDown() {
         if( rCtrlDown || lCtrlDown ||
             rAltDown || lAltDown ||
             rMetaDown || lMetaDown ) {
+            return true;
+            }
+        }    
+    
+    return false;
+    }
+
+
+
+char isControlKeyDown() {
+    SDLMod modState = SDL_GetModState();
+    
+
+    if( modState & KMOD_CTRL ) {
+        return true;
+        }
+    
+    if( screen->isPlayingBack() ) {
+        // ignore these, saved internally, unless we're playing back
+        // they can fall out of sync with keyboard reality as the user
+        // alt-tabs between windows and release events are lost.
+        if( rCtrlDown || lCtrlDown ) {
+            return true;
+            }
+        }    
+    
+    return false;
+    }
+
+
+
+char isAltKeyDown() {
+    SDLMod modState = SDL_GetModState();
+    
+
+    if( modState & KMOD_ALT ) {
+        return true;
+        }
+    
+    if( screen->isPlayingBack() ) {
+        // ignore these, saved internally, unless we're playing back
+        // they can fall out of sync with keyboard reality as the user
+        // alt-tabs between windows and release events are lost.
+        if( rAltDown || lAltDown ) {
             return true;
             }
         }    
