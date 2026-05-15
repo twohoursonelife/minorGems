@@ -201,6 +201,9 @@ char mapSDLKeyToASCII( int inSDLKey );
 static unsigned char keyMap[256];
 static char keyMapOn = true;
 
+static SDLKey sLastSym = SDLK_UNKNOWN;
+SDLKey getLastKeySym() { return sLastSym; }
+
 
 // FOVMOD NOTE:  Change 1/3 - Take these lines during the merge process
 long timeSinceLastFrameMS = 0;
@@ -1870,6 +1873,8 @@ void ScreenGL::start() {
                 case SDL_KEYUP: {
                     int mouseX, mouseY;
                     SDL_GetMouseState( &mouseX, &mouseY );
+
+                    sLastSym = event.key.keysym.sym;
                     
                     
                     // check if special key
@@ -1927,13 +1932,11 @@ void ScreenGL::start() {
                                 asciiKey = scanCodeMap[event.key.keysym.scancode];
                             }
 
-                        if( asciiKey != 0 ) {
-                            if( event.type == SDL_KEYDOWN ) {
-                                callbackKeyboard( asciiKey, mouseX, mouseY );
-                                }
-                            else {
-                                callbackKeyboardUp( asciiKey, mouseX, mouseY );
-                                }
+                        if( event.type == SDL_KEYDOWN ) {
+                            callbackKeyboard( asciiKey, mouseX, mouseY );
+                            }
+                        else {
+                            callbackKeyboardUp( asciiKey, mouseX, mouseY );
                             }
                         }
                     }
