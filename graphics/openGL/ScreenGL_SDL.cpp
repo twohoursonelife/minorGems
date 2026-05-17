@@ -1946,7 +1946,7 @@ void ScreenGL::start() {
 
                         int n = ToUnicodeEx(vk, scancode, state, out, 4, 0, hkl);
 
-                        if ( n == 1 && out[0] <= 255 ) asciiKeyUnmodified = (unsigned char)out[0];
+                        if( n == 1 && ( out[0] >= 32 && out[0] < 127 ) ) asciiKeyUnmodified = (unsigned char)out[0];
 
                         #else
                         SDLKey sym = event.key.keysym.sym;
