@@ -33,40 +33,39 @@
 
 
 // special key codes
-#define  MG_KEY_F1                        0x0001
-#define  MG_KEY_F2                        0x0002
-#define  MG_KEY_F3                        0x0003
-#define  MG_KEY_F4                        0x0004
-#define  MG_KEY_F5                        0x0005
-#define  MG_KEY_F6                        0x0006
-#define  MG_KEY_F7                        0x0007
-#define  MG_KEY_F8                        0x0008
-#define  MG_KEY_F9                        0x0009
-#define  MG_KEY_F10                       0x000A
-#define  MG_KEY_F11                       0x000B
-#define  MG_KEY_F12                       0x000C
-#define  MG_KEY_LEFT                      0x0064
-#define  MG_KEY_UP                        0x0065
-#define  MG_KEY_RIGHT                     0x0066
-#define  MG_KEY_DOWN                      0x0067
-#define  MG_KEY_PAGE_UP                   0x0068
-#define  MG_KEY_PAGE_DOWN                 0x0069
-#define  MG_KEY_HOME                      0x006A
-#define  MG_KEY_END                       0x006B
-#define  MG_KEY_INSERT                    0x006C
-
-#define  MG_KEY_RSHIFT                    0x0070
-#define  MG_KEY_LSHIFT                    0x0071
-#define  MG_KEY_RCTRL                     0x0072
-#define  MG_KEY_LCTRL                     0x0073
-#define  MG_KEY_RALT                      0x0074
-#define  MG_KEY_LALT                      0x0075
-#define  MG_KEY_RMETA                     0x0076
-#define  MG_KEY_LMETA                     0x0077
+#define  MG_KEY_F1           128
+#define  MG_KEY_F2           129
+#define  MG_KEY_F3           130
+#define  MG_KEY_F4           131
+#define  MG_KEY_F5           132
+#define  MG_KEY_F6           133
+#define  MG_KEY_F7           134
+#define  MG_KEY_F8           135
+#define  MG_KEY_F9           136
+#define  MG_KEY_F10          137
+#define  MG_KEY_F11          138
+#define  MG_KEY_F12          139
+#define  MG_KEY_LEFT         140
+#define  MG_KEY_UP           141
+#define  MG_KEY_RIGHT        142
+#define  MG_KEY_DOWN         143
+#define  MG_KEY_PAGE_UP      144
+#define  MG_KEY_PAGE_DOWN    145
+#define  MG_KEY_HOME         146
+#define  MG_KEY_END          147
+#define  MG_KEY_INSERT       148
+#define  MG_KEY_RSHIFT       149
+#define  MG_KEY_LSHIFT       150
+#define  MG_KEY_RCTRL        151
+#define  MG_KEY_LCTRL        152
+#define  MG_KEY_RALT         153
+#define  MG_KEY_LALT         154
+#define  MG_KEY_RMETA        155
+#define  MG_KEY_LMETA        156
 
 
 // bounds of key constants
-#define  MG_KEY_FIRST_CODE    MG_KEY_F1                     
+#define  MG_KEY_FIRST_CODE    MG_KEY_F1
 #define  MG_KEY_LAST_CODE     MG_KEY_LMETA                     
 
 
@@ -145,6 +144,9 @@ class KeyboardHandlerGL {
 		 */
 		virtual void specialKeyReleased( int inKey, int inX, int inY ) = 0;
 
+
+		virtual void unmodifiedKeyPressed( unsigned char inKey ) { }
+		virtual void unmodifiedKeyReleased( unsigned char inKey ) { }
 
         char mHandlerFlagged;
 

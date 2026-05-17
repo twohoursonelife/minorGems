@@ -183,6 +183,9 @@ void specialKeyDown( int inKeyCode );
 void specialKeyUp( int inKeyCode );
 
 
+void unmodifiedKeyDown( unsigned char inASCII );
+
+void unmodifiedKeyUp( unsigned char inASCII );
 
 
 
