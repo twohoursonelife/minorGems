@@ -162,6 +162,10 @@
 #include "minorGems/crypto/hashes/sha1.h"
 #include "minorGems/formats/encodingUtils.h"
 
+#ifdef _WIN32
+#include <windows.h>
+#endif
+
 #ifdef __mac__
 #include "minorGems/game/platforms/SDL/mac/SDLMain_Ext.h"
 #endif
@@ -1929,11 +1933,27 @@ void ScreenGL::start() {
                         else {
                                 asciiKey = scanCodeMap[event.key.keysym.scancode];
                             }
-
+                        
                         unsigned char asciiKeyUnmodified = 0;
+                        
+                        #ifdef _WIN32
+                        Uint8 scancode = event.key.keysym.scancode;
+                        HKL hkl = GetKeyboardLayout(0);
+                        UINT vk = MapVirtualKeyExW(scancode, MAPVK_VSC_TO_VK, hkl);
+
+                        unsigned char state[256] = {0};
+                        wchar_t out[4] = {0};
+
+                        int n = ToUnicodeEx(vk, scancode, state, out, 4, 0, hkl);
+
+                        if ( n == 1 && out[0] <= 255 ) asciiKeyUnmodified = (unsigned char)out[0];
+
+                        #else
                         SDLKey sym = event.key.keysym.sym;
                         if( sym >= 32 && sym < 127 ) asciiKeyUnmodified = (unsigned char)sym;
 
+                        #endif
+                        
                         if( event.type == SDL_KEYDOWN ) {
                             callbackUnmodifiedKeyboard( asciiKeyUnmodified );
                             }
