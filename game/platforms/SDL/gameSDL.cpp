@@ -1588,6 +1588,11 @@ int mainFunction( int inNumArgs, char **inArgs ) {
 #endif
 
 
+    #ifdef __mac__
+        setenv( "SDL12COMPAT_OPENGL_SCALING", "0", 0 );
+    #endif
+
+
     // check result below, after opening log, so we can log failure
     Uint32 flags = SDL_INIT_VIDEO | SDL_INIT_NOPARACHUTE;
     if( getUsesSound() ) {
@@ -1620,6 +1625,35 @@ int mainFunction( int inNumArgs, char **inArgs ) {
             appNamePointer[0] = '\0';
             
             chdir( appDirectoryPath );
+            }
+        else {
+            // 2HOL ships as 2HOL_v<dataVersion>.app, and the name built
+            // above uses getAppVersion(), which is still the compiled-in
+            // version number at this point (dataVersionNumber.txt can only
+            // be read after we have chdir'd).  So the name never matches.
+            // Fall back to cutting the path at whatever .app we are running
+            // out of, which leaves the folder the bundle was dropped into.
+            char *bundlePointer = NULL;
+            char *searchPointer = strstr( appDirectoryPath, ".app/" );
+
+            // take the last .app/ in the path, in case the game folder
+            // itself happens to sit inside some other bundle
+            while( searchPointer != NULL ) {
+                bundlePointer = searchPointer;
+                searchPointer = strstr( &( searchPointer[1] ), ".app/" );
+                }
+
+            if( bundlePointer != NULL ) {
+                // walk back to the start of the bundle's own name
+                while( bundlePointer > appDirectoryPath &&
+                       bundlePointer[-1] != '/' ) {
+                    bundlePointer --;
+                    }
+
+                bundlePointer[0] = '\0';
+
+                chdir( appDirectoryPath );
+                }
             }
                 
         
