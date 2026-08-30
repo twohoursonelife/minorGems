@@ -4,6 +4,11 @@
 # 2006-June-27    Jason Rohrer
 # Created.  Adapted from Transcend project.
 #
+# 2026-August-20    Antinoid
+# Modernized for 64-bit macOS.  The SDL 1.2 framework this used to link
+# against no longer exists on any current system, so SDL now comes from
+# Homebrew's sdl12-compat, found through sdl-config.
+#
 
 
 ##
@@ -12,15 +17,28 @@
 ##
 
 
-# __mac__ to trigger certain mac-specific coping code
-# paths to GL and GLUT headers
+# Homebrew lives at /opt/homebrew on Apple Silicon and /usr/local on Intel.
+# Ask brew rather than guessing so the same Makefile works on both.
+BREW_PREFIX := $(shell brew --prefix 2>/dev/null || echo /usr/local)
 
-PLATFORM_COMPILE_FLAGS = -DBSD -D__mac__ -I/System/Library/Frameworks/OpenGL.framework/Headers
+
+# __mac__ triggers the mac-specific code paths in minorGems (working
+# directory handling for .app bundles, <OpenGL/gl.h> instead of <GL/gl.h>,
+# the SDLMain_Ext.h menu bar helper).
+# BSD picks the right branch in minorGems/system/endian.h.
+# The BREW_PREFIX include path is what lets <SDL/SDL.h> resolve against
+# sdl12-compat's headers without any source changes.
+PLATFORM_COMPILE_FLAGS = -DBSD -D__mac__ -DGL_SILENCE_DEPRECATION -I$(BREW_PREFIX)/include -D_THREAD_SAFE
 
 
-# various frameworks to support OpenGL and SDL
-# static linking against zlib and libpng
-PLATFORM_LINK_FLAGS = -framework OpenGL -framework SDL -framework Cocoa ../../minorGems/game/platforms/SDL/mac/SDLMain.m ${CUSTOM_MACOSX_LINK_FLAGS}
+# sdl-config emits -lSDLmain -lSDL -Wl,-framework,Cocoa.
+#
+# MenuBarHelper.m rather than SDLMain.m:  sdl12-compat's libSDLmain.a
+# already provides main(), and SDL_main.h renames the game's own main() to
+# SDL_main() on mac, so compiling all of SDLMain.m would define main twice.
+# MenuBarHelper.m supplies just the NSMenu_setMenuBarVisible that
+# ScreenGL_SDL.cpp needs for fullscreen.
+PLATFORM_LINK_FLAGS = -framework OpenGL -L$(BREW_PREFIX)/lib $(shell sdl-config --libs) ${ROOT_PATH}/minorGems/game/platforms/SDL/mac/MenuBarHelper.m ${CUSTOM_MACOSX_LINK_FLAGS}
 
 # for headless builds with no GL or SDL
 PLATFORM_LINK_FLAGS_HEADLESS = ${CUSTOM_MACOSX_LINK_FLAGS}
@@ -28,13 +46,14 @@ PLATFORM_LINK_FLAGS_HEADLESS = ${CUSTOM_MACOSX_LINK_FLAGS}
 
 
 # not used for some builds
-PLATFORM_LIBJPEG_FLAG = /usr/lib/libjpeg.a
+PLATFORM_LIBJPEG_FLAG = -ljpeg
 
 # not used for some builds
-PLATFORM_LIBPNG_FLAG = /usr/lib/libz.a /usr/lib/libpng.a
+# libpng depends on zlib, so the order of these matters
+PLATFORM_LIBPNG_FLAG = -lpng -lz
 
 
-# Nothing special for OS X here
+# g++ is clang on macOS
 GXX = g++ 
 LINK_FLAGS =
 
@@ -57,6 +76,6 @@ POLL_PLATFORM = Unix
 POLL_PLATFORM_PATH = unix
 
 # PLATFORM_DISCORD_SDK_FLAG = -Wl,-Bdynamic -ldiscord_game_sdk -L$(DISCORD_SDK_PATH)/lib/x86_64 -Wl,-Bstatic
-ifneq($(DISCORD_SDK_PATH),)
+ifneq ($(DISCORD_SDK_PATH),)
 $(error DISCORD SDK NOT IMPLEMENTED FOR THIS PLATFORM, DISABLE IT)
 endif
