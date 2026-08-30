@@ -1662,6 +1662,19 @@ char ScreenGL::isMinimized() {
 
 
 
+static void releaseAllKeys() {
+    int mouseX, mouseY;
+    SDL_GetMouseState( &mouseX, &mouseY );
+    for( int i=0; i<255; i++ ) {
+        callbackKeyboardUp( i, mouseX, mouseY );
+        }
+    for( int i=MG_KEY_FIRST_CODE; i<=MG_KEY_LAST_CODE; i++ ) {
+        callbackSpecialKeyboardUp( i, mouseX, mouseY );
+        }
+    }
+
+
+
 void ScreenGL::start() {
 	currentScreenGL = this;
 
@@ -1858,6 +1871,11 @@ void ScreenGL::start() {
                 
 
             switch( event.type ) {
+                case SDL_ACTIVEEVENT:
+                    if( !event.active.gain && ( event.active.state & SDL_APPINPUTFOCUS ) ) {
+                        releaseAllKeys();
+                        }
+                    break;
                 case SDL_QUIT: {
                     // map to 27, escape
                     int mouseX, mouseY;
@@ -2116,12 +2134,7 @@ void ScreenGL::start() {
                 callbackMouse( SDL_BUTTON_WHEELDOWN, 
                                SDL_RELEASED, mouseX, mouseY );
 
-                for( int i=0; i<255; i++ ) {
-                    callbackKeyboardUp( i, mouseX, mouseY );
-                    }
-                for( int i=MG_KEY_FIRST_CODE; i<=MG_KEY_LAST_CODE; i++ ) {
-                    callbackSpecialKeyboardUp( i, mouseX, mouseY );
-                    }
+                releaseAllKeys();
                 }
             
 
