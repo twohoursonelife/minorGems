@@ -707,6 +707,8 @@ class ScreenGL {
 		friend void callbackPreDisplay();
         friend void callbackDisplay();
 		friend void callbackIdle();
+		friend void callbackUnmodifiedKeyboard( unsigned char inKey );
+		friend void callbackUnmodifiedKeyboardUp( unsigned char inKey );
 		
 
 

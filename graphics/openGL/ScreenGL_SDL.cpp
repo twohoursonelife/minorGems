@@ -162,6 +162,10 @@
 #include "minorGems/crypto/hashes/sha1.h"
 #include "minorGems/formats/encodingUtils.h"
 
+#ifdef _WIN32
+#include <windows.h>
+#endif
+
 #ifdef __mac__
 #include "minorGems/game/platforms/SDL/mac/SDLMain_Ext.h"
 #endif
@@ -216,6 +220,9 @@ void callbackPreDisplay();
 void callbackDisplay();
 void callbackIdle();
 */
+
+void callbackUnmodifiedKeyboard( unsigned char inKey );
+void callbackUnmodifiedKeyboardUp( unsigned char inKey );
 
 ScreenGL::ScreenGL( int inWide, int inHigh, char inFullScreen,
                     char inDoNotChangeNativeResolution,
@@ -1944,6 +1951,35 @@ void ScreenGL::start() {
                         else {
                                 asciiKey = scanCodeMap[event.key.keysym.scancode];
                             }
+                        
+                        unsigned char asciiKeyUnmodified = 0;
+                        
+                        #ifdef _WIN32
+                        Uint8 scancode = event.key.keysym.scancode;
+                        HKL hkl = GetKeyboardLayout(0);
+                        UINT vk = MapVirtualKeyExW(scancode, MAPVK_VSC_TO_VK, hkl);
+
+                        unsigned char state[256] = {0};
+                        wchar_t out[4] = {0};
+
+                        int n = ToUnicodeEx(vk, scancode, state, out, 4, 0, hkl);
+
+                        if( n == 1 && out[0] < 128 ) asciiKeyUnmodified = (unsigned char)out[0];
+
+                        #else
+                        SDLKey sym = event.key.keysym.sym;
+                        if( sym < 128 ) asciiKeyUnmodified = (unsigned char)sym;
+
+                        #endif
+                        
+                        if( asciiKeyUnmodified != 0 && asciiKeyUnmodified < 128 ) {
+                            if( event.type == SDL_KEYDOWN ) {
+                                callbackUnmodifiedKeyboard( asciiKeyUnmodified );
+                                }
+                            else {
+                                callbackUnmodifiedKeyboardUp( asciiKeyUnmodified );
+                                }
+                            }
 
                         if( asciiKey != 0 ) {
                             if( event.type == SDL_KEYDOWN ) {
@@ -2627,8 +2663,8 @@ void callbackKeyboardUp( unsigned char inKey, int inX, int inY ) {
     
 	}	
 
-	
-	
+
+
 void callbackSpecialKeyboard( int inKey, int inX, int inY ) {
     if( currentScreenGL->mRecordingEvents &&
         currentScreenGL->mRecordingOrPlaybackStarted ) {
@@ -2739,6 +2775,73 @@ void callbackSpecialKeyboardUp( int inKey, int inX, int inY ) {
     
 	}	
 
+void callbackUnmodifiedKeyboard( unsigned char inKey ) {
+    char someFocused = currentScreenGL->isKeyboardHandlerFocused();
+
+    int h;
+    for( h=0; h<currentScreenGL->mKeyboardHandlerVector->size(); h++ ) {
+        KeyboardHandlerGL *handler
+			= *( currentScreenGL->mKeyboardHandlerVector->getElement( h ) );
+        handler->mHandlerFlagged = true;
+        }
+
+        for( h=0; h<currentScreenGL->mKeyboardHandlerVector->size(); h++ ) {
+		KeyboardHandlerGL *handler
+			= *( currentScreenGL->mKeyboardHandlerVector->getElement( h ) );
+
+        if( handler->mHandlerFlagged ) {
+            if( !someFocused || handler->isFocused() ) {
+                handler->unmodifiedKeyPressed( inKey );
+                if( handler->mEatEvent ) {
+                    handler->mEatEvent = false;
+                    goto unmodified_down_eaten;
+                    }
+                }
+            }
+        }
+
+    unmodified_down_eaten:
+
+    for( h=0; h<currentScreenGL->mKeyboardHandlerVector->size(); h++ ) {
+        KeyboardHandlerGL *handler
+			= *( currentScreenGL->mKeyboardHandlerVector->getElement( h ) );
+        handler->mHandlerFlagged = false;
+        }
+    }
+void callbackUnmodifiedKeyboardUp( unsigned char inKey ) {
+    char someFocused = currentScreenGL->isKeyboardHandlerFocused();
+
+    int h;
+    for( h=0; h<currentScreenGL->mKeyboardHandlerVector->size(); h++ ) {
+        KeyboardHandlerGL *handler
+			= *( currentScreenGL->mKeyboardHandlerVector->getElement( h ) );
+        handler->mHandlerFlagged = true;
+        }
+
+        for( h=0; h<currentScreenGL->mKeyboardHandlerVector->size(); h++ ) {
+		KeyboardHandlerGL *handler
+			= *( currentScreenGL->mKeyboardHandlerVector->getElement( h ) );
+
+        if( handler->mHandlerFlagged ) {
+            if( !someFocused || handler->isFocused() ) {
+                handler->unmodifiedKeyReleased( inKey );
+                if( handler->mEatEvent ) {
+                    handler->mEatEvent = false;
+                    goto unmodified_up_eaten;
+                    }
+                }
+            }
+        }
+
+    unmodified_up_eaten:
+    
+    for( h=0; h<currentScreenGL->mKeyboardHandlerVector->size(); h++ ) {
+        KeyboardHandlerGL *handler 
+			= *( currentScreenGL->mKeyboardHandlerVector->getElement( h ) );
+        handler->mHandlerFlagged = false;
+        }
+    }
+	
 
 	
 void callbackMotion( int inX, int inY ) {

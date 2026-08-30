@@ -441,6 +441,8 @@ class GameSceneHandler :
 		virtual void specialKeyPressed( int inKey, int inX, int inY );
 		virtual void keyReleased( unsigned char inKey, int inX, int inY );
 		virtual void specialKeyReleased( int inKey, int inX, int inY );
+        virtual void unmodifiedKeyPressed( unsigned char inKey );
+        virtual void unmodifiedKeyReleased( unsigned char inKey );
         
         // implements the RedrawListener interface
 		virtual void fireRedraw();
@@ -4029,6 +4031,19 @@ void GameSceneHandler::specialKeyReleased(
 
     specialKeyUp( inKey );
     } 
+
+
+void GameSceneHandler::unmodifiedKeyPressed(
+	unsigned char inKey ) {
+
+    unmodifiedKeyDown( inKey );
+    }
+
+void GameSceneHandler::unmodifiedKeyReleased(
+	unsigned char inKey ) {
+
+    unmodifiedKeyUp( inKey );
+    }
 
 
 
