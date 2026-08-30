@@ -435,9 +435,9 @@ double Font::getCharSpacing() {
 
 double Font::getCharPos( SimpleVector<doublePair> *outPositions,
                          const char *inString, doublePair inPosition,
-                         TextAlignment inAlign ) {
+                         TextAlignment inAlign, double scale_argument) {
 
-    double scale = scaleFactor * mScaleFactor;
+    double scale = scaleFactor * mScaleFactor * scale_argument;
     
     unsigned int numChars = strlen( inString );
     
@@ -455,7 +455,7 @@ double Font::getCharPos( SimpleVector<doublePair> *outPositions,
     double stringWidth = 0;
     
     if( inAlign != alignLeft ) {
-        stringWidth = measureString( inString );
+        stringWidth = measureString( inString, -1, scale_argument );
         }
     
     switch( inAlign ) {
@@ -490,7 +490,7 @@ double Font::getCharPos( SimpleVector<doublePair> *outPositions,
         doublePair drawPos;
         
         double charWidth = positionCharacter( (unsigned char)( inString[i] ), 
-                                              charPos, &drawPos );
+                                              charPos, &drawPos, scale_argument);
         outPositions->push_back( drawPos );
         
         x += charWidth + mCharSpacing * scale;
@@ -515,12 +515,12 @@ double Font::getCharPos( SimpleVector<doublePair> *outPositions,
 
 
 double Font::drawString( const char *inString, doublePair inPosition,
-                         TextAlignment inAlign ) {
+                         TextAlignment inAlign, double scale_argument) {
     SimpleVector<doublePair> pos( strlen( inString ) );
 
-    double returnVal = getCharPos( &pos, inString, inPosition, inAlign );
+    double returnVal = getCharPos( &pos, inString, inPosition, inAlign, scale_argument);
 
-    double scale = scaleFactor * mScaleFactor;
+    double scale = scaleFactor * mScaleFactor * scale_argument;
     
     for( int i=0; i<pos.size(); i++ ) {
         SpriteHandle spriteID = mSpriteMap[ (unsigned char)( inString[i] ) ];
@@ -538,10 +538,10 @@ double Font::drawString( const char *inString, doublePair inPosition,
 
 
 double Font::positionCharacter( unsigned char inC, doublePair inTargetPos,
-                                doublePair *outActualPos ) {
+                                doublePair *outActualPos, double scale_argument) {
     *outActualPos = inTargetPos;
     
-    double scale = scaleFactor * mScaleFactor;
+    double scale = scaleFactor * mScaleFactor * scale_argument;
 
     if( inC == ' ' ) {
         return mSpaceWidth * scale;
@@ -594,8 +594,8 @@ void Font::drawCharacterSprite( unsigned char inC, doublePair inPosition ) {
 
 
 
-double Font::measureString( const char *inString, int inCharLimit ) {
-    double scale = scaleFactor * mScaleFactor;
+double Font::measureString( const char *inString, int inCharLimit, double scale_argument) {
+    double scale = scaleFactor * mScaleFactor * scale_argument;
 
     int numChars = inCharLimit;
 
