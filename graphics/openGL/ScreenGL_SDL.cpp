@@ -1674,6 +1674,7 @@ static void releaseAllKeys() {
     SDL_GetMouseState( &mouseX, &mouseY );
     for( int i=0; i<255; i++ ) {
         callbackKeyboardUp( i, mouseX, mouseY );
+        if( i <= MG_KEY_LAST_CODE ) callbackUnmodifiedKeyboardUp( i );
         }
     for( int i=MG_KEY_FIRST_CODE; i<=MG_KEY_LAST_CODE; i++ ) {
         callbackSpecialKeyboardUp( i, mouseX, mouseY );
