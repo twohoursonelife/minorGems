@@ -9,6 +9,16 @@
 # against no longer exists on any current system, so SDL now comes from
 # Homebrew's sdl12-compat, found through sdl-config.
 #
+# 2026-September-16    hobby-dev
+# Added MacPorts support alongside Homebrew, auto-detected.  MacPorts hides
+# sdl12-compat's sdl-config/headers/libs under libexec/<port name> and its
+# sdl-config still hardcodes the pre-move paths, so the libexec layout is
+# read directly instead of trusting sdl-config.
+# Also added MACOSX_ARCHS (universal arm64+x86_64 builds, once every linked
+# library has a matching universal build -- see
+# build/macOSX/installMacPortsDeps.sh) and MACOSX_DEPLOYMENT_TARGET
+# (defaults to 11.0; must match what the bundled libraries were built for).
+#
 
 
 ##
@@ -18,30 +28,74 @@
 
 
 # Homebrew lives at /opt/homebrew on Apple Silicon and /usr/local on Intel.
-# Ask brew rather than guessing so the same Makefile works on both.
-BREW_PREFIX := $(shell brew --prefix 2>/dev/null || echo /usr/local)
+# MacPorts lives at /opt/local (technically configurable, but that is the
+# overwhelmingly common case, and `port` has no read-only "print prefix"
+# subcommand to query it).
+BREW_PREFIX := $(shell brew --prefix 2>/dev/null)
+PORT_BIN := $(shell command -v port 2>/dev/null)
+
+ifneq ($(BREW_PREFIX),)
+  PKG_MANAGER := brew
+  PKG_PREFIX := $(BREW_PREFIX)
+else ifneq ($(PORT_BIN),)
+  PKG_MANAGER := port
+  PKG_PREFIX := /opt/local
+else
+  PKG_MANAGER := none
+  PKG_PREFIX := /usr/local
+endif
+
+
+# Override with `make MACOSX_ARCHS="arm64 x86_64"` (or export it before
+# running configure) for a universal binary.  Every linked library needs a
+# matching universal build first: on MacPorts, see
+# build/macOSX/installMacPortsDeps.sh; on Homebrew there is no bottled
+# universal variant, so those formulas must be built from source per-arch
+# and combined with lipo before this can produce a working fat binary.
+MACOSX_ARCHS ?= $(shell uname -m)
+ARCH_FLAGS := $(foreach a,$(MACOSX_ARCHS),-arch $(a))
+
+
+# Override with `make MACOSX_DEPLOYMENT_TARGET=10.13` (or export it before
+# running configure).  Must match what the bundled libraries were built
+# for -- see build/macOSX/installMacPortsDeps.sh.
+MACOSX_DEPLOYMENT_TARGET ?= 11.0
+MIN_VERSION_FLAGS := -mmacosx-version-min=$(MACOSX_DEPLOYMENT_TARGET)
+
+
+ifeq ($(PKG_MANAGER),port)
+  SDL_PREFIX := $(PKG_PREFIX)/libexec/sdl12-compat
+  SDL_CFLAGS := -I$(SDL_PREFIX)/include
+  SDL_LIBS := -L$(SDL_PREFIX)/lib -lSDLmain -lSDL -Wl,-framework,Cocoa
+else
+  SDL_CFLAGS := $(shell sdl-config --cflags)
+  SDL_LIBS := $(shell sdl-config --libs)
+endif
 
 
 # __mac__ triggers the mac-specific code paths in minorGems (working
 # directory handling for .app bundles, <OpenGL/gl.h> instead of <GL/gl.h>,
 # the SDLMain_Ext.h menu bar helper).
 # BSD picks the right branch in minorGems/system/endian.h.
-# The BREW_PREFIX include path is what lets <SDL/SDL.h> resolve against
-# sdl12-compat's headers without any source changes.
-PLATFORM_COMPILE_FLAGS = -DBSD -D__mac__ -DGL_SILENCE_DEPRECATION -I$(BREW_PREFIX)/include -D_THREAD_SAFE
-
-
-# sdl-config emits -lSDLmain -lSDL -Wl,-framework,Cocoa.
 #
+# Split into a no-arch base plus the real flags: clang refuses to write a
+# single -MM dependency file for more than one -arch at once, so the
+# generic %.dep rule below needs the arch-free version.
+PLATFORM_COMPILE_FLAGS_NOARCH = $(MIN_VERSION_FLAGS) -DBSD -D__mac__ -DGL_SILENCE_DEPRECATION -I$(PKG_PREFIX)/include $(SDL_CFLAGS) -D_THREAD_SAFE
+PLATFORM_COMPILE_FLAGS = $(ARCH_FLAGS) $(PLATFORM_COMPILE_FLAGS_NOARCH)
+
+%.dep: PLATFORM_COMPILE_FLAGS = $(PLATFORM_COMPILE_FLAGS_NOARCH)
+
+
 # MenuBarHelper.m rather than SDLMain.m:  sdl12-compat's libSDLmain.a
 # already provides main(), and SDL_main.h renames the game's own main() to
 # SDL_main() on mac, so compiling all of SDLMain.m would define main twice.
 # MenuBarHelper.m supplies just the NSMenu_setMenuBarVisible that
 # ScreenGL_SDL.cpp needs for fullscreen.
-PLATFORM_LINK_FLAGS = -framework OpenGL -L$(BREW_PREFIX)/lib $(shell sdl-config --libs) ${ROOT_PATH}/minorGems/game/platforms/SDL/mac/MenuBarHelper.m ${CUSTOM_MACOSX_LINK_FLAGS}
+PLATFORM_LINK_FLAGS = $(ARCH_FLAGS) $(MIN_VERSION_FLAGS) -framework OpenGL -L$(PKG_PREFIX)/lib $(SDL_LIBS) ${ROOT_PATH}/minorGems/game/platforms/SDL/mac/MenuBarHelper.m ${CUSTOM_MACOSX_LINK_FLAGS}
 
 # for headless builds with no GL or SDL
-PLATFORM_LINK_FLAGS_HEADLESS = ${CUSTOM_MACOSX_LINK_FLAGS}
+PLATFORM_LINK_FLAGS_HEADLESS = $(ARCH_FLAGS) $(MIN_VERSION_FLAGS) ${CUSTOM_MACOSX_LINK_FLAGS}
 
 
 
