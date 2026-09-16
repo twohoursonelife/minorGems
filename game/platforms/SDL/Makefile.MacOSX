@@ -10,14 +10,10 @@
 # Homebrew's sdl12-compat, found through sdl-config.
 #
 # 2026-September-16    hobby-dev
-# Added MacPorts support alongside Homebrew, auto-detected.  MacPorts hides
-# sdl12-compat's sdl-config/headers/libs under libexec/<port name> and its
-# sdl-config still hardcodes the pre-move paths, so the libexec layout is
-# read directly instead of trusting sdl-config.
-# Also added MACOSX_ARCHS (universal arm64+x86_64 builds, once every linked
-# library has a matching universal build -- see
-# build/macOSX/installMacPortsDeps.sh) and MACOSX_DEPLOYMENT_TARGET
-# (defaults to 11.0; must match what the bundled libraries were built for).
+# Added MacPorts support, auto-detected (its sdl-config hardcodes stale
+# paths, so the libexec layout is read directly instead), plus
+# MACOSX_ARCHS/MACOSX_DEPLOYMENT_TARGET for universal builds -- see
+# build/macOSX/installMacPortsDeps.sh.
 #
 
 
@@ -27,10 +23,8 @@
 ##
 
 
-# Homebrew lives at /opt/homebrew on Apple Silicon and /usr/local on Intel.
-# MacPorts lives at /opt/local (technically configurable, but that is the
-# overwhelmingly common case, and `port` has no read-only "print prefix"
-# subcommand to query it).
+# Homebrew: /opt/homebrew (Apple Silicon) or /usr/local (Intel), via `brew
+# --prefix`.  MacPorts: always /opt/local (no query subcommand for it).
 BREW_PREFIX := $(shell brew --prefix 2>/dev/null)
 PORT_BIN := $(shell command -v port 2>/dev/null)
 
@@ -46,19 +40,15 @@ else
 endif
 
 
-# Override with `make MACOSX_ARCHS="arm64 x86_64"` (or export it before
-# running configure) for a universal binary.  Every linked library needs a
-# matching universal build first: on MacPorts, see
-# build/macOSX/installMacPortsDeps.sh; on Homebrew there is no bottled
-# universal variant, so those formulas must be built from source per-arch
-# and combined with lipo before this can produce a working fat binary.
+# Override with `make MACOSX_ARCHS="arm64 x86_64"` for a universal binary --
+# needs every linked library built universal first (MacPorts:
+# installMacPortsDeps.sh; Homebrew ships no universal bottles).
 MACOSX_ARCHS ?= $(shell uname -m)
 ARCH_FLAGS := $(foreach a,$(MACOSX_ARCHS),-arch $(a))
 
 
-# Override with `make MACOSX_DEPLOYMENT_TARGET=10.13` (or export it before
-# running configure).  Must match what the bundled libraries were built
-# for -- see build/macOSX/installMacPortsDeps.sh.
+# Override with `make MACOSX_DEPLOYMENT_TARGET=10.13`; must match what the
+# bundled libraries were built for (installMacPortsDeps.sh).
 MACOSX_DEPLOYMENT_TARGET ?= 11.0
 MIN_VERSION_FLAGS := -mmacosx-version-min=$(MACOSX_DEPLOYMENT_TARGET)
 
@@ -78,11 +68,9 @@ endif
 # the SDLMain_Ext.h menu bar helper).
 # BSD picks the right branch in minorGems/system/endian.h.
 #
-# Split into a no-arch base plus the real flags: clang refuses to write a
-# single -MM dependency file for more than one -arch at once, so both
-# dependency-scanning rules below need the arch-free version -- the generic
-# %.dep rule (Makefile.all) and the minorGems bulk dependency scan
-# (Makefile.minorGems_targets), which both invoke g++ -MM.
+# Split into a no-arch base plus the real flags: clang can't write one -MM
+# dependency file for multiple -arch flags, so both g++ -MM sites below
+# (the %.dep rule and the minorGems bulk scan) force the arch-free version.
 PLATFORM_COMPILE_FLAGS_NOARCH = $(MIN_VERSION_FLAGS) -DBSD -D__mac__ -DGL_SILENCE_DEPRECATION -I$(PKG_PREFIX)/include $(SDL_CFLAGS) -D_THREAD_SAFE
 PLATFORM_COMPILE_FLAGS = $(ARCH_FLAGS) $(PLATFORM_COMPILE_FLAGS_NOARCH)
 
