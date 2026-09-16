@@ -79,12 +79,15 @@ endif
 # BSD picks the right branch in minorGems/system/endian.h.
 #
 # Split into a no-arch base plus the real flags: clang refuses to write a
-# single -MM dependency file for more than one -arch at once, so the
-# generic %.dep rule below needs the arch-free version.
+# single -MM dependency file for more than one -arch at once, so both
+# dependency-scanning rules below need the arch-free version -- the generic
+# %.dep rule (Makefile.all) and the minorGems bulk dependency scan
+# (Makefile.minorGems_targets), which both invoke g++ -MM.
 PLATFORM_COMPILE_FLAGS_NOARCH = $(MIN_VERSION_FLAGS) -DBSD -D__mac__ -DGL_SILENCE_DEPRECATION -I$(PKG_PREFIX)/include $(SDL_CFLAGS) -D_THREAD_SAFE
 PLATFORM_COMPILE_FLAGS = $(ARCH_FLAGS) $(PLATFORM_COMPILE_FLAGS_NOARCH)
 
 %.dep: PLATFORM_COMPILE_FLAGS = $(PLATFORM_COMPILE_FLAGS_NOARCH)
+Makefile.minorGems_dependencies: PLATFORM_COMPILE_FLAGS = $(PLATFORM_COMPILE_FLAGS_NOARCH)
 
 
 # MenuBarHelper.m rather than SDLMain.m:  sdl12-compat's libSDLmain.a
