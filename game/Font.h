@@ -46,16 +46,20 @@ class Font {
         
         // draws a string on the current screen using set draw color
         // returns x coordinate of string end
-        double drawString( const char *inString, doublePair inPosition,
-                           TextAlignment inAlign = alignCenter );
+        double drawString( const char *inString,
+                           doublePair inPosition,
+                           TextAlignment inAlign = alignCenter,
+                           double scale_argument = 1.);
 
 
-        double measureString( const char *inString, int inCharLimit = -1 );
+        double measureString( const char *inString, int inCharLimit = -1, double scale_argument = 1.);
         
         // gets per-character position of string without drawing it
         double getCharPos( SimpleVector<doublePair> *outPositions,
-            const char *inString, doublePair inPosition,
-            TextAlignment inAlign = alignCenter );
+                           const char *inString,
+                           doublePair inPosition,
+                           TextAlignment inAlign = alignCenter,
+                           double scale_argument = 1.);
         
 
         // height of basic, non-accented characters
@@ -96,7 +100,7 @@ class Font {
         
         // returns x coordinate to right of drawn character
         double positionCharacter( unsigned char inC, doublePair inTargetPos,
-                                  doublePair *outActualPos );
+                                  doublePair *outActualPos, double scale_argument = 1. );
 
         
         double mScaleFactor;
